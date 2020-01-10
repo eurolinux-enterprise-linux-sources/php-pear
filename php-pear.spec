@@ -1,20 +1,20 @@
 
 %global peardir %{_datadir}/pear
 
-%global xmlrpcver 1.5.3
+%global xmlrpcver 1.5.4
 %global getoptver 1.2.3
-%global arctarver 1.3.3
-%global structver 1.0.2
+%global arctarver 1.3.7
+%global structver 1.0.4
 %global xmlutil   1.2.1
 
 Summary: PHP Extension and Application Repository framework
 Name: php-pear
-Version: 1.9.0
-Release: 2%{?dist}
+Version: 1.9.4
+Release: 4%{?dist}
 Epoch: 1
 # PEAR, Archive_Tar, XML_Util are BSD
 # XML-RPC, Console_Getopt are PHP
-# Structures_Graph is LGPL
+# Structures_Graph is LGPLv2+
 License: BSD and PHP and LGPLv2+
 Group: Development/Languages
 URL: http://pear.php.net/package/PEAR
@@ -34,7 +34,7 @@ Source21: http://pear.php.net/get/Archive_Tar-%{arctarver}.tgz
 Source22: http://pear.php.net/get/Console_Getopt-%{getoptver}.tgz
 Source23: http://pear.php.net/get/Structures_Graph-%{structver}.tgz
 Source24: http://pear.php.net/get/XML_Util-%{xmlutil}.tgz
-
+Patch0: php-pear-1.9.4-restcache.patch
 BuildArch: noarch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: php-cli >= 5.1.0-1, php-xml, gnupg
@@ -45,7 +45,8 @@ Provides: php-pear(Structures_Graph) = %{structver}
 Provides: php-pear(XML_RPC) = %{xmlrpcver}
 Provides: php-pear(XML_Util) = %{xmlutil}
 Obsoletes: php-pear-XML-Util <= %{xmlutil}
-Provides:  php-pear-XML-Util = %{xmlutil}-%{release}
+# Hold release string in legacy provide, since XML_Util has not changed:
+Provides:  php-pear-XML-Util = %{xmlutil}-2%{?dist}
 Requires: php-cli >= 5.1.0-1
 
 %description
@@ -67,7 +68,7 @@ tar xzf %{SOURCE24} package.xml
 mv package.xml XML_Util.xml
 
 # apply patches on used PEAR during install
-# -- no patch
+# - no patch
 
 %build
 # This is an empty build section.
@@ -117,14 +118,16 @@ install -m 755 %{SOURCE12} $RPM_BUILD_ROOT%{_bindir}/peardev
 %{_bindir}/php -r "print_r(unserialize(substr(file_get_contents('$RPM_BUILD_ROOT%{_sysconfdir}/pear.conf'),17)));"
 
 install -m 644 -c %{SOURCE4} LICENSE
-install -m 644 -c %{SOURCE4} LICENSE-XML_RPC
+install -m 644 -c %{SOURCE5} LICENSE-XML_RPC
 
 install -m 644 -c %{SOURCE13} \
            $RPM_BUILD_ROOT%{_sysconfdir}/rpm/macros.pear     
 
 # apply patches on installed PEAR tree
 pushd $RPM_BUILD_ROOT%{peardir} 
-# -- no patch
+ pushd PEAR
+  %__patch -s --no-backup --fuzz 0 -p0 < %{PATCH0}
+ popd
 popd
 
 # Why this file here ?
@@ -167,6 +170,23 @@ rm new-pear.conf
 
 
 %changelog
+* Tue Oct 25 2011 Joe Orton <jorton@redhat.com> - 1:1.9.4-4
+- fix patch application for #747361
+
+* Fri Oct 21 2011 Joe Orton <jorton@redhat.com> - 1:1.9.4-3
+- ignore REST cache creation failures as non-root user (#747361)
+
+* Tue Sep 20 2011 Joe Orton <jorton@redhat.com> - 1:1.9.4-2
+- fix XML-Util provides
+
+* Tue Sep  6 2011 Joe Orton <jorton@redhat.com> - 1:1.9.4-1
+- update to 1.9.4 (#651897)
+- update XML_RPC to 1.5.4, Structures_Graph to 1.0.4, Archive_Tar to 1.3.7
+
+* Tue Aug 16 2011 Joe Orton <jorton@redhat.com> - 1:1.9.1-1
+- update to 1.9.1 (#651897)
+- fix installation of XML_RPC license file
+
 * Tue Jun 22 2010 Joe Orton <jorton@redhat.com> - 1:1.9.0-2
 - update to XML_RPC 1.5.3 (#606280)
 - bundle LICENSE files per Fedora (Remi Collet)
