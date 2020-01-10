@@ -10,7 +10,7 @@
 Summary: PHP Extension and Application Repository framework
 Name: php-pear
 Version: 1.9.4
-Release: 4%{?dist}
+Release: 5%{?dist}
 Epoch: 1
 # PEAR, Archive_Tar, XML_Util are BSD
 # XML-RPC, Console_Getopt are PHP
@@ -35,6 +35,7 @@ Source22: http://pear.php.net/get/Console_Getopt-%{getoptver}.tgz
 Source23: http://pear.php.net/get/Structures_Graph-%{structver}.tgz
 Source24: http://pear.php.net/get/XML_Util-%{xmlutil}.tgz
 Patch0: php-pear-1.9.4-restcache.patch
+Patch1: php-pear-1.9.4-subdir.patch
 BuildArch: noarch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: php-cli >= 5.1.0-1, php-xml, gnupg
@@ -68,7 +69,8 @@ tar xzf %{SOURCE24} package.xml
 mv package.xml XML_Util.xml
 
 # apply patches on used PEAR during install
-# - no patch
+%patch1 -p1
+
 
 %build
 # This is an empty build section.
@@ -128,6 +130,7 @@ pushd $RPM_BUILD_ROOT%{peardir}
  pushd PEAR
   %__patch -s --no-backup --fuzz 0 -p0 < %{PATCH0}
  popd
+  %__patch -s --no-backup --fuzz 0 -p1 < %{PATCH1}
 popd
 
 # Why this file here ?
@@ -154,7 +157,7 @@ rm new-pear.conf
 
 %triggerpostun -- php-pear-XML-Util
 # re-register extension unregistered during postun of obsoleted php-pear-XML-Util
-%{_bindir}/pear install --nodeps --soft --force --register-only %{pear_xmldir}/XML_Util.xml >/dev/null || :
+%{_bindir}/pear install --nodeps --soft --force --register-only %{peardir}/.pkgxml/XML_Util.xml >/dev/null || :
 
 
 %files
@@ -170,6 +173,12 @@ rm new-pear.conf
 
 
 %changelog
+* Mon Nov 30 2015 Remi Collet <rcollet@redhat.com> - 1:1.9.4-5
+- fix unexpanded RPM macro in triggerpostun #1018131
+- define date.timezone in pear/pecl commands #1040839
+- define %%php_metadir macro #953810
+- fix incorrect handling of backslashes in file names #1216952
+
 * Tue Oct 25 2011 Joe Orton <jorton@redhat.com> - 1:1.9.4-4
 - fix patch application for #747361
 
