@@ -15,7 +15,7 @@
 Summary: PHP Extension and Application Repository framework
 Name: php-pear
 Version: 1.9.4
-Release: 20%{?dist}
+Release: 21%{?dist}
 Epoch: 1
 # PEAR, Archive_Tar, XML_Util are BSD
 # Console_Getopt is PHP
@@ -284,6 +284,9 @@ fi
 
 
 %changelog
+* Fri Dec 27 2013 Daniel Mach <dmach@redhat.com> - 1:1.9.4-21
+- Mass rebuild 2013-12-27
+
 * Wed Jul 10 2013 Remi Collet <rcollet@redhat.com> 1:1.9.4-20
 - add man page for pear.conf file
 
